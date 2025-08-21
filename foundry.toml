@@ -1,0 +1,12 @@
+[profile.default]
+optimizer = true
+optimizer_runs = 200
+
+[rpc_endpoints]
+hl_mainnet = "https://rpc.hyperliquid.xyz/evm"
+hl_testnet = "https://rpc.hyperliquid-testnet.xyz/evm"
+
+[fmt]
+# These are all the `forge fmt` defaults.
+line_length = 120
+tab_width = 4
