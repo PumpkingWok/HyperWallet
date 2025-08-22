@@ -17,13 +17,16 @@ contract HyperWalletFactory is Ownable2Step, ERC721 {
     address public immutable HYPER_WALLET;
 
     /// @dev Next id to mint
-    uint256 walletId;
+    uint256 public walletId;
 
     /// @dev token address => system address
     mapping(address => address) public systemAddress;
 
     /// @dev module address => enabled/disabled
     mapping(address => bool) public modules;
+
+    /// @dev walletId => hyperWallet contract
+    mapping(uint256 => address) public wallets;
 
     ///////////////
     // Events //
@@ -55,6 +58,8 @@ contract HyperWalletFactory is Ownable2Step, ERC721 {
 
         // mint an NFT to the user
         _mint(user, walletId);
+
+        wallets[walletId] = wallet;
 
         emit WalletCreated(user, walletId++, wallet);
     }

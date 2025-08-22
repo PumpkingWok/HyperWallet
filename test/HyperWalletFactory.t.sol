@@ -32,6 +32,7 @@ contract HyperWalletFactoryTest is Test {
         vm.prank(user1);
         address newWallet = walletFactory.createWallet(user1);
         assertEq(IHyperWallet(newWallet).walletId(), 0);
+        assertEq(walletFactory.wallets(0), newWallet);
     }
 
     function testEnableModule() external {

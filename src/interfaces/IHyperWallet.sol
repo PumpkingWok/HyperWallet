@@ -28,5 +28,7 @@ interface IHyperWallet {
 
     function walletId() external view returns (uint256);
 
+    function wallets(uint256 walletId) external view returns (address);
+
     function withdraw(address token, uint256 amount, address to) external;
 }
