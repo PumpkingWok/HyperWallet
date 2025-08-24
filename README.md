@@ -107,6 +107,11 @@ The module's architecture supports extension through new implementations featuri
 - Advanced collateralization mechanisms
 - Automated risk assessment systems
 
+Third-party platforms can leverage this module to access users' Core funds instantly, enabling seamless integration between HyperCore and external EVM protocols. This creates powerful composability where protocols can:
+- Access Core spot balances in the same transaction as their protocol logic
+- Execute complex strategies combining Core funds with EVM DeFi operations
+- Build cross-platform features without requiring users to manually bridge assets
+
 ## Contributing
 
 We welcome contributions to the HyperWallet ecosystem! Here's how you can contribute:
