@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.25;
 
+import {ICoreWriter} from "../../interfaces/ICoreWriter.sol";
 import {IHyperWallet} from "../../interfaces/IHyperWallet.sol";
 import "../Module.sol";
 
@@ -9,7 +10,7 @@ import "../Module.sol";
 /// @author HyperWallet Labs
 contract CoreWriterModule is Module {
     /// @dev hyperliquid core writer
-    address constant CORE_WRITER = 0x3333333333333333333333333333333333333333;
+    ICoreWriter constant CORE_WRITER = ICoreWriter(0x3333333333333333333333333333333333333333);
 
     /// @dev Emitted when an action is successfully executed through the core writer
     /// @param hyperWallet The address of the HyperWallet that executed the action
@@ -57,7 +58,7 @@ contract CoreWriterModule is Module {
 
             emit ActionExecuted(hyperWallet, actionsData[i]);
         }
-        IHyperWallet(hyperWallet).doActions(CORE_WRITER, sendDatas);
+        IHyperWallet(hyperWallet).doActions(address(CORE_WRITER), sendDatas);
     }
 
     /**
@@ -68,10 +69,11 @@ contract CoreWriterModule is Module {
      */
     function _doAction(address hyperWallet, bytes memory actionData)
         internal
+        virtual
         onlyHyperWalletOwnerOrAllowed(hyperWallet)
     {
         bytes memory sendData = abi.encodeWithSignature("sendRawAction(bytes)", actionData);
-        IHyperWallet(hyperWallet).doAction(CORE_WRITER, sendData);
+        IHyperWallet(hyperWallet).doAction(address(CORE_WRITER), sendData);
 
         // Emit event after successful execution
         emit ActionExecuted(hyperWallet, actionData);

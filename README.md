@@ -72,6 +72,41 @@ A utility module designed to facilitate the initial account setup on Hyperliquid
 - Automates the account enabling process using evm funds, without any fund required at core.
 - Handles the required HYPE and USDC token transfer for account activation
 
+#### 5. Flash Loan Module
+The FlashLoan module introduces an innovative lending mechanism that leverages HyperCore's spot balances. Unlike conventional flash loans that mandate repayment within the same transaction, this module enables users to borrow tokens against their Core spot account collateral, with repayment occurring in subsequent EVM blocks.
+
+The current implementation requires liquidity providers to deposit tokens into the module contract. This V1 design prioritizes simplicity and security, while future iterations could incorporate:
+- Fee structures for revenue generation
+- Integration with ERC-4626 tokenized vaults
+- Expanded liquidity provider incentives
+- Advanced risk management systems
+
+**Strategic Applications:**
+This module bridges the async validation pattern between HyperEVM and HyperCore, enabling new use cases through immediate access to Core funds. Potential flash loan scenarios (ordered by risk level):
+
+1. **Spot to EVM Transfer** (Lowest Risk)
+   - Direct spot balance to system address transfer
+
+2. **Perp to Spot to EVM**
+   - USD class transfer from perpetual to spot
+   - Subsequent transfer to system address
+
+3. **Core Swap and Transfer**
+   - Execute limit order swap on Core
+   - Transfer resulting balance to system address
+
+4. **Complex Perpetual Operations** (Highest Risk)
+   - Execute perpetual market operations
+   - Transfer proceeds through spot wallet
+   - Final settlement to EVM
+
+**Future Development:**
+The module's architecture supports extension through new implementations featuring:
+- Custom security policies
+- Risk-based lending parameters
+- Advanced collateralization mechanisms
+- Automated risk assessment systems
+
 ## Contributing
 
 We welcome contributions to the HyperWallet ecosystem! Here's how you can contribute:
