@@ -84,7 +84,7 @@ contract CoreWriterSdkSecurityModule is CoreWriterSdkModule {
         if (isDeposit) {
             _checkSpotBalance(wallet, USDC_CORE_TOKEN_ID, usd);
         } else {
-            L1Read.UserVaultEquity memory userEquity = L1Read.userVaultEquity(wallet, vault);
+            PrecompileLib.UserVaultEquity memory userEquity = PrecompileLib.userVaultEquity(wallet, vault);
             if (userEquity.equity < usd) revert NotEnoughAmount();
             if (userEquity.lockedUntilTimestamp > block.timestamp) revert AmountLocked();
         }
@@ -155,8 +155,7 @@ contract CoreWriterSdkSecurityModule is CoreWriterSdkModule {
         if (toPerp) {
             _checkSpotBalance(wallet, USDC_CORE_TOKEN_ID, ntl);
         } else {
-            L1Read.Withdrawable memory withdrawableFromPerp = L1Read.withdrawable(wallet);
-            if (withdrawableFromPerp.withdrawable < ntl) revert NotEnoughAmount();
+            if (PrecompileLib.withdrawable(wallet) < ntl) revert NotEnoughAmount();
         }
         super.usdClassTransfer(wallet, ntl, toPerp);
     }
@@ -190,7 +189,7 @@ contract CoreWriterSdkSecurityModule is CoreWriterSdkModule {
      * @custom:throws NotEnoughAmount if balance is insufficient
      */
     function _checkSpotBalance(address wallet, uint64 token, uint64 balance) internal {
-        L1Read.SpotBalance memory spotBalance = L1Read.spotBalance(wallet, token);
+        PrecompileLib.SpotBalance memory spotBalance = PrecompileLib.spotBalance(wallet, token);
         if (spotBalance.total < balance) revert NotEnoughAmount();
     }
 }

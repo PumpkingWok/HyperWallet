@@ -113,7 +113,7 @@ contract FlashLoanModule is CoreWriterSdkModule {
         view
         returns (bool)
     {
-        L1Read.SpotBalance memory spotBalance = L1Read.spotBalance(hyperWallet, tokenIdCoreSpot);
+        PrecompileLib.SpotBalance memory spotBalance = PrecompileLib.spotBalance(hyperWallet, tokenIdCoreSpot);
         if (spotBalance.total < amount) return false;
 
         // check the module token balance

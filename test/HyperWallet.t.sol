@@ -75,43 +75,83 @@ contract HyperWalletTest is Test {
         assertEq(tokenSABalanceAfter - tokenSABalanceBefore, amountToTransfer);
     }
 
+    function testTransferTokenNotSupported() external {
+        address dummyToken = address(0xABBBA);
+        vm.expectRevert(HyperWallet.TokenNotSupported.selector);
+        hwUser1.transferTokenToCoreSpot(dummyToken, 1e18);
+    }
+
     function testWithdraw() external {
         uint256 amountToWithdraw = 1e8;
         deal(address(token), address(hwUser1), amountToWithdraw);
+
         uint256 userBalanceBefore = token.balanceOf(user1);
         vm.prank(user1);
         hwUser1.withdraw(address(token), amountToWithdraw, user1);
         uint256 hwBalance = token.balanceOf(address(hwUser1));
         uint256 userBalanceAfter = token.balanceOf(user1);
+
         assertEq(hwBalance, 0);
         assertEq(userBalanceAfter - userBalanceBefore, amountToWithdraw);
     }
 
     function testEnableDisableModule() external {
         address module = address(0xABCD);
-        factory.toggleModule(module, true);
+        vm.expectRevert(HyperWallet.ModuleNotActive.selector);
+        // enable only on wallet
+        _toggleModule(module, true, false);
 
-        vm.prank(user1);
-        hwUser1.toggleModule(module, true);
+        // enable in both factory and wallet
+        _toggleModule(module, true, true);
 
         assertEq(hwUser1.modules(module), true);
 
-        vm.prank(user1);
-        hwUser1.toggleModule(module, false);
+        // disable on wallet
+        _toggleModule(module, false, false);
 
         assertEq(hwUser1.modules(module), false);
     }
 
     function testDoAction() external {
         address module = address(0xABCD);
-        factory.toggleModule(module, true);
-
-        vm.prank(user1);
-        hwUser1.toggleModule(module, true);
+        address moduleNotEnabled = address(0xABBCD);
+        // enable in both factory and wallet
+        _toggleModule(module, true, true);
 
         address destination;
         bytes memory action;
         vm.prank(module);
+        hwUser1.doAction(destination, action);
+
+        // test ModuleNotEnabled error
+        vm.roll(block.number + 1);
+        vm.startPrank(moduleNotEnabled);
+        vm.expectRevert(HyperWallet.ModuleNotEnabled.selector);
+        hwUser1.doAction(destination, action);
+    }
+
+    function testDoActions() external {
+        address module = address(0xABCD);
+        // enable in both factory and wallet
+        _toggleModule(module, true, true);
+
+        address destination;
+        bytes[] memory actions = new bytes[](3);
+        vm.prank(module);
+        hwUser1.doActions(destination, actions);
+    }
+
+    function testOneActionPerBlock() external {
+        address module = address(0xABCD);
+        _toggleModule(module, true, true);
+
+        address destination;
+        bytes memory action;
+
+        vm.startPrank(module);
+        hwUser1.doAction(destination, action);
+
+        vm.expectRevert(HyperWallet.BlockAlreadyUsed.selector);
         hwUser1.doAction(destination, action);
     }
 
@@ -122,6 +162,10 @@ contract HyperWalletTest is Test {
         hwUser1.toggleAllowance(module, allowed, true);
 
         assertEq(hwUser1.allowance(module, allowed), true);
+
+        // test OnlyNftHolder error
+        vm.expectRevert(HyperWallet.NotNftHolder.selector);
+        hwUser1.toggleAllowance(module, allowed, false);
     }
 
     function testTransferOwnership() external {
@@ -135,5 +179,14 @@ contract HyperWalletTest is Test {
 
         vm.prank(newOwner);
         hwUser1.toggleAllowance(address(0xABBB), address(0xABCD), true);
+    }
+
+    function _toggleModule(address module, bool walletStatus, bool enableOnFactory) internal {
+        if (enableOnFactory) {
+            factory.toggleModule(module, enableOnFactory);
+        }
+
+        vm.prank(user1);
+        hwUser1.toggleModule(module, walletStatus);
     }
 }

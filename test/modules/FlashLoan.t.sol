@@ -3,26 +3,16 @@ pragma solidity ^0.8.18;
 
 import "forge-std/Test.sol";
 
-import {HyperWalletFactory} from "../../src/HyperWalletFactory.sol";
 import {IHyperWallet} from "../../src/interfaces/IHyperWallet.sol";
 import {ITokenBook} from "../../src/interfaces/ITokenBook.sol";
 import {FlashLoanModule} from "../../src/modules/flashLoan/FlashLoanModule.sol";
-import {MockCoreUserExists} from "../mocks/MockCoreUserExists.sol";
-import {MockSpotBalance} from "../mocks/MockSpotBalance.sol";
 import {ERC20} from "solady/tokens/ERC20.sol";
 import {TokenBook} from "../../src/utils/TokenBook.sol";
+import {ModuleTest} from "./Module.t.sol";
 
-abstract contract FlashLoanTest is Test {
-    HyperWalletFactory walletFactory;
+abstract contract FlashLoanTest is ModuleTest {
     FlashLoanModule flashLoan;
-    MockSpotBalance internal spotBalancePrecompile;
-    MockCoreUserExists internal coreUserExistsPrecompile;
     TokenBook tokenBook;
-
-    string forkRpc;
-
-    address user1 = address(0xBBBB);
-    address user1Wallet;
 
     address token;
     address tokenSystemAddress;
@@ -35,16 +25,12 @@ abstract contract FlashLoanTest is Test {
         tokenCoreId = tokenCoreId_;
     }
 
-    function setUp() public {
-        uint256 forkId = vm.createFork(forkRpc);
-        vm.selectFork(forkId);
+    function setUp() public override {
+        super.setUp();
 
         tokenBook = new TokenBook(address(this));
 
         tokenBook.addTokenInfo(token, TokenBook.TokenInfo(tokenSystemAddress, tokenCoreId));
-
-        walletFactory = new HyperWalletFactory(address(this));
-        user1Wallet = walletFactory.createWallet(user1);
 
         flashLoan = new FlashLoanModule(address(tokenBook), "FlashLoan", "1.0");
         walletFactory.toggleModule(address(flashLoan), true);
@@ -52,18 +38,10 @@ abstract contract FlashLoanTest is Test {
         vm.prank(user1);
         IHyperWallet(user1Wallet).toggleModule(address(flashLoan), true);
 
-        spotBalancePrecompile = new MockSpotBalance();
-        vm.etch(0x0000000000000000000000000000000000000801, address(spotBalancePrecompile).code);
-        spotBalancePrecompile = MockSpotBalance(0x0000000000000000000000000000000000000801);
-
-        coreUserExistsPrecompile = new MockCoreUserExists();
-        vm.etch(0x0000000000000000000000000000000000000810, address(coreUserExistsPrecompile).code);
-        coreUserExistsPrecompile = MockCoreUserExists(0x0000000000000000000000000000000000000810);
+        spotBalancePrecompile.setSpotBalance(user1Wallet, tokenCoreId, 100e8, 0, 0);
 
         // simulate enabling the wallet at core side
         coreUserExistsPrecompile.setCoreUserExists(user1Wallet, true);
-
-        spotBalancePrecompile.setSpotBalance(user1Wallet, tokenCoreId, 100e8, 0, 0);
     }
 
     function testDeploy() external {

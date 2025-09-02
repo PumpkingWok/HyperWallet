@@ -6,25 +6,18 @@ import "forge-std/Test.sol";
 import {HyperWalletFactory} from "../../src/HyperWalletFactory.sol";
 import {IHyperWallet} from "../../src/interfaces/IHyperWallet.sol";
 import {EnablerModule} from "../../src/modules/enabler/EnablerModule.sol";
-import {MockSpotBalance} from "../mocks/MockSpotBalance.sol";
-import {MockCoreUserExists} from "../mocks/MockCoreUserExists.sol";
 import {ERC20} from "solady/tokens/ERC20.sol";
+import {ModuleTest} from "./Module.t.sol";
 
-abstract contract EnablerTest is Test {
-    HyperWalletFactory internal walletFactory;
-    MockSpotBalance internal spotBalancePrecompile;
-    MockCoreUserExists internal coreUserExistsPrecompile;
+abstract contract EnablerTest is ModuleTest {
     EnablerModule internal enabler;
 
-    address user1 = address(0xABCD);
-    address user1Wallet;
     address recipient = address(0xAABB);
 
     uint64 hypeCoreTokenId;
     uint64 usdcCoreTokenId;
     address usdcSystemAddress;
     address usdc;
-    string forkRpc;
 
     constructor(
         uint64 _hypeCoreTokenId,
@@ -40,12 +33,8 @@ abstract contract EnablerTest is Test {
         forkRpc = _forkRpc;
     }
 
-    function setUp() public {
-        uint256 forkId = vm.createFork(forkRpc);
-        vm.selectFork(forkId);
-
-        walletFactory = new HyperWalletFactory(address(this));
-        user1Wallet = walletFactory.createWallet(user1);
+    function setUp() public override {
+        super.setUp();
 
         enabler =
             new EnablerModule(hypeCoreTokenId, usdcCoreTokenId, usdcSystemAddress, usdc, recipient, "Enabler", "1.0");
@@ -53,14 +42,6 @@ abstract contract EnablerTest is Test {
 
         vm.prank(user1);
         IHyperWallet(user1Wallet).toggleModule(address(enabler), true);
-
-        spotBalancePrecompile = new MockSpotBalance();
-        vm.etch(0x0000000000000000000000000000000000000801, address(spotBalancePrecompile).code);
-        spotBalancePrecompile = MockSpotBalance(0x0000000000000000000000000000000000000801);
-
-        coreUserExistsPrecompile = new MockCoreUserExists();
-        vm.etch(0x0000000000000000000000000000000000000810, address(coreUserExistsPrecompile).code);
-        coreUserExistsPrecompile = MockCoreUserExists(0x0000000000000000000000000000000000000810);
 
         spotBalancePrecompile.setSpotBalance(
             address(enabler), hypeCoreTokenId, enabler.HYPE_ENABLER_AMOUNT_CORE(), 0, 0

@@ -117,15 +117,14 @@ contract EnablerModule is Module {
         oneActionPerBlock
     {
         // check if the wallet already exists at core
-        L1Read.CoreUserExists memory coreUserExists = L1Read.coreUserExists(hyperWallet);
-        if (coreUserExists.exists) revert WalletAlreadyEnabled();
+        if (PrecompileLib.coreUserExists(hyperWallet)) revert WalletAlreadyEnabled();
 
         // check if the hype amount pass is correct
         if (msg.value != HYPE_ENABLER_AMOUNT_EVM) revert WrongHypeAmount();
 
         // check if at core side there is enough amount in HYPE and 1 USDC as fee required to enable it the first time
-        L1Read.SpotBalance memory hypeSpotBalance = L1Read.spotBalance(address(this), HYPE_CORE_TOKEN_ID);
-        L1Read.SpotBalance memory usdcSpotBalance = L1Read.spotBalance(address(this), USDC_CORE_TOKEN_ID);
+        PrecompileLib.SpotBalance memory hypeSpotBalance = PrecompileLib.spotBalance(address(this), HYPE_CORE_TOKEN_ID);
+        PrecompileLib.SpotBalance memory usdcSpotBalance = PrecompileLib.spotBalance(address(this), USDC_CORE_TOKEN_ID);
         if (hypeSpotBalance.total < HYPE_ENABLER_AMOUNT_CORE) revert NotEnoughAmount();
         if (usdcSpotBalance.total < USDC_ENABLER_AMOUNT) revert NotEnoughAmount();
 
@@ -152,8 +151,8 @@ contract EnablerModule is Module {
         if (msg.sender != RECIPIENT) revert NotAllowed();
 
         // bridge all HYPE and USDC to evm
-        L1Read.SpotBalance memory hypeSpotBalance = L1Read.spotBalance(address(this), HYPE_CORE_TOKEN_ID);
-        L1Read.SpotBalance memory usdcSpotBalance = L1Read.spotBalance(address(this), USDC_CORE_TOKEN_ID);
+        PrecompileLib.SpotBalance memory hypeSpotBalance = PrecompileLib.spotBalance(address(this), HYPE_CORE_TOKEN_ID);
+        PrecompileLib.SpotBalance memory usdcSpotBalance = PrecompileLib.spotBalance(address(this), USDC_CORE_TOKEN_ID);
 
         // it charges fee in HYPE (default fee 0.00002 HYPE) to send USDC from core to evm
         // zero fee to send hype from core to evm

@@ -3,7 +3,7 @@ pragma solidity ^0.8.25;
 
 import {IHyperWallet} from "../interfaces/IHyperWallet.sol";
 import {IERC721} from "openzeppelin/token/ERC721/IERC721.sol";
-import {L1Read} from "../utils/L1Read.sol";
+import {PrecompileLib} from "hyper-evm-lib/PrecompileLib.sol";
 
 /// @notice abstract core module
 /// @author HyperWallet Labs
@@ -62,8 +62,7 @@ abstract contract Module {
      */
     function _onlyEnabledWallet(address hyperWallet) internal view {
         // check if the wallet already exists at core
-        L1Read.CoreUserExists memory coreUserExists = L1Read.coreUserExists(hyperWallet);
-        if (!coreUserExists.exists) revert WalletNotEnabled();
+        if (!PrecompileLib.coreUserExists(hyperWallet)) revert WalletNotEnabled();
     }
 
     /**

@@ -2,3 +2,4 @@ openzeppelin/=lib/openzeppelin-contracts/contracts/
 openzeppelin-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
 solady/=lib/solady/src/
 forge-std/=lib/forge-std/src/
+hyper-evm-lib/=lib/hyper-evm-lib/src/
